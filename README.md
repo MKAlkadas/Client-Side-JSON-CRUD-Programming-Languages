@@ -1,4 +1,7 @@
 a complete HTML/CSS/jQuery website that allows you to perform CRUD operations on JSON files entirely client-side. This application will use browser storage to simulate file operations.
+<img width="1236" height="840" alt="JsonCrudClientSide" src="https://github.com/user-attachments/assets/e4b119d5-bbd6-4ea2-950e-b5edfda159a5" />
+
+
 Features of this JSON CRUD Manager:
 Create JSON Files - Create new JSON files with custom names
 
