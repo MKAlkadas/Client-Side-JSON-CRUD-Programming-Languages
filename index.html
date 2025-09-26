@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON CRUD Manager with Data Operations</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            flex: 1;
+            min-width: 300px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .main-content {
+            flex: 2;
+            min-width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .data-crud-section {
+            flex: 1;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        h3 {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .file-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item:hover {
+            background: #e9ecef;
+        }
+        
+        .file-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .file-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .json-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .data-path {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .data-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-key {
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        .data-value {
+            flex: 1;
+            margin-left: 15px;
+            font-family: monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .data-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .data-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background: #2ecc71;
+        }
+        
+        .notification.error {
+            background: #e74c3c;
+        }
+        
+        .data-navigation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .breadcrumb-item {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .breadcrumb-item:hover {
+            background: #e9ecef;
+        }
+        
+        .breadcrumb-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar, .main-content {
+                min-width: 100%;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .button-group button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>JSON CRUD Manager with Data Operations</h1>
+            <p class="subtitle">Manage JSON files and their internal data structure</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="sidebar">
+                <div class="card">
+                    <h2>File Management</h2>
+                    <div class="form-group">
+                        <label for="filename">File Name</label>
+                        <input type="text" id="filename" placeholder="Enter file name (without .json)">
+                    </div>
+                    <div class="button-group">
+                        <button id="createFile" class="btn-success">Create New File</button>
+                        <button id="importFile">Import JSON File</button>
+                        <input type="file" id="fileInput" accept=".json" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>Saved Files</h2>
+                    <ul class="file-list" id="fileList">
+                        <!-- File list will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="card">
+                    <h2>JSON Editor</h2>
+                    <div class="form-group">
+                        <label for="jsonData">JSON Content</label>
+                        <textarea id="jsonData" placeholder='Enter valid JSON, e.g., { "key": "value" }'></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button id="validateJson">Validate JSON</button>
+                        <button id="updateJson" class="btn-success">Update File</button>
+                        <button id="deleteFile" class="btn-danger">Delete File</button>
+                    </div>
+                </div>
+                
+                <div class="data-crud-section">
+                    <div class="card">
+                        <h2>Data CRUD Operations</h2>
+                        
+                        <div class="data-navigation">
+                            <span>Current Path:</span>
+                            <div class="breadcrumb" id="breadcrumb">
+                                <div class="breadcrumb-item active" data-path="">root</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dataKey">Key/Property Name</label>
+                            <input type="text" id="dataKey" placeholder="Enter key name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dataValue">Value</label>
+                            <textarea id="dataValue" placeholder="Enter value (JSON for objects/arrays)"></textarea>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="addData" class="btn-success">Add Property</button>
+                            <button id="updateData" class="btn-warning">Update Property</button>
+                            <button id="deleteData" class="btn-danger">Delete Property</button>
+                            <button id="navigateInto">Navigate Into</button>
+                            <button id="navigateUp">Navigate Up</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>Current Data Structure</h2>
+                        <div id="dataStructure" class="json-display">
+                            <div class="empty-state">
+                                <i>📄</i>
+                                <p>No file selected or data to display.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>JSON Preview</h2>
+                    <div id="jsonPreview" class="json-display">
+                        <div class="empty-state">
+                            <i>📄</i>
+                            <p>No file selected. Create a new file or select an existing one.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script>
+        $(document).ready(function() {
+            let currentFilePath = '';
+            let currentDataPath = [];
+            
+            // Initialize file list
+            updateFileList();
+            
+            // Create new file
+            $('#createFile').click(function() {
+                const filename = $('#filename').val().trim();
+                if (!filename) {
+                    showNotification('Please enter a file name', 'error');
+                    return;
+                }
+                
+                const fullFilename = filename.endsWith('.json') ? filename : filename + '.json';
+                
+                if (localStorage.getItem(fullFilename)) {
+                    showNotification('File already exists', 'error');
+                    return;
+                }
+                
+                // Create empty JSON object
+                const initialData = {};
+                localStorage.setItem(fullFilename, JSON.stringify(initialData));
+                
+                $('#filename').val('');
+                updateFileList();
+                selectFile(fullFilename);
+                showNotification('File created successfully', 'success');
+            });
+            
+            // Import JSON file
+            $('#importFile').click(function() {
+                $('#fileInput').click();
+            });
+            
+            $('#fileInput').change(function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const jsonContent = JSON.parse(e.target.result);
+                        const filename = file.name;
+                        
+                        // Store in localStorage
+                        localStorage.setItem(filename, JSON.stringify(jsonContent, null, 2));
+                        
+                        updateFileList();
+                        selectFile(filename);
+                        showNotification('File imported successfully', 'success');
+                    } catch (error) {
+                        showNotification('Invalid JSON file', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Reset file input
+                $(this).val('');
+            });
+            
+            // Update JSON content
+            $('#updateJson').click(function() {
+                if (!currentFilePath) {
+                    showNotification('No file selected', 'error');
+                    return;
+                }
+                
+                try {
+                    const jsonText = $('#jsonData').val().trim();
+                    const jsonData = jsonText ? JSON.parse(jsonText) : {};
+                    
+                    localStorage.setItem(currentFilePath, JSON.stringify(jsonData, null, 2));
+                    updateDataStructure();
+                    updateJsonPreview();
+                    showNotification('File updated successfully', 'success');
+                } catch (error) {
+                    showNotification('Invalid JSON format', 'error');
+                }
+            });
+            
+            // Validate JSON
+            $('#validateJson').click(function() {
+                try {
+                    const jsonText = $('#jsonData').val().trim();
+                    if (!jsonText) {
+                        showNotification('JSON is empty', 'error');
+                        return;
+                    }
+                    
+                    JSON.parse(jsonText);
+                    showNotification('JSON is valid', 'success');
+                } catch (error) {
+                    showNotification('Invalid JSON: ' + error.message, 'error');
+                }
+            });
+            
+            // Delete file
+            $('#deleteFile').click(function() {
+                if (!currentFilePath) {
+                    showNotification('No file selected', 'error');
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete "${currentFilePath}"?`)) {
+                    localStorage.removeItem(currentFilePath);
+                    updateFileList();
+                    resetDataView();
+                    showNotification('File deleted successfully', 'success');
+                }
+            });
+            
+            // Add data property
+            $('#addData').click(function() {
+                if (!currentFilePath) {
+                    showNotification('No file selected', 'error');
+                    return;
+                }
+                
+                const key = $('#dataKey').val().trim();
+                if (!key) {
+                    showNotification('Please enter a key name', 'error');
+                    return;
+                }
+                
+                try {
+                    const valueText = $('#dataValue').val().trim();
+                    const value = valueText ? (tryParseJSON(valueText) || valueText) : '';
+                    
+                    const currentData = getCurrentData();
+                    const target = getDataAtPath(currentData, currentDataPath);
+                    
+                    if (target && typeof target === 'object' && !Array.isArray(target)) {
+                        target[key] = value;
+                        saveData(currentData);
+                        updateDataStructure();
+                        updateJsonPreview();
+                        
+                        $('#dataKey').val('');
+                        $('#dataValue').val('');
+                        showNotification(`Property "${key}" added successfully`, 'success');
+                    } else {
+                        showNotification('Cannot add property to current selection', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error adding property: ' + error.message, 'error');
+                }
+            });
+            
+            // Update data property
+            $('#updateData').click(function() {
+                if (!currentFilePath) {
+                    showNotification('No file selected', 'error');
+                    return;
+                }
+                
+                const key = $('#dataKey').val().trim();
+                if (!key) {
+                    showNotification('Please enter a key name', 'error');
+                    return;
+                }
+                
+                try {
+                    const valueText = $('#dataValue').val().trim();
+                    const value = valueText ? (tryParseJSON(valueText) || valueText) : '';
+                    
+                    const currentData = getCurrentData();
+                    const target = getDataAtPath(currentData, currentDataPath);
+                    
+                    if (target && typeof target === 'object' && key in target) {
+                        target[key] = value;
+                        saveData(currentData);
+                        updateDataStructure();
+                        updateJsonPreview();
+                        showNotification(`Property "${key}" updated successfully`, 'success');
+                    } else {
+                        showNotification(`Property "${key}" not found`, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error updating property: ' + error.message, 'error');
+                }
+            });
+            
+            // Delete data property
+            $('#deleteData').click(function() {
+                if (!currentFilePath) {
+                    showNotification('No file selected', 'error');
+                    return;
+                }
+                
+                const key = $('#dataKey').val().trim();
+                if (!key) {
+                    showNotification('Please enter a key name', 'error');
+                    return;
+                }
+                
+                try {
+                    const currentData = getCurrentData();
+                    const target = getDataAtPath(currentData, currentDataPath);
+                    
+                    if (target && typeof target === 'object' && key in target) {
+                        if (confirm(`Are you sure you want to delete property "${key}"?`)) {
+                            delete target[key];
+                            saveData(currentData);
+                            updateDataStructure();
+                            updateJsonPreview();
+                            
+                            $('#dataKey').val('');
+                            $('#dataValue').val('');
+                            showNotification(`Property "${key}" deleted successfully`, 'success');
+                        }
+                    } else {
+                        showNotification(`Property "${key}" not found`, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error deleting property: ' + error.message, 'error');
+                }
+            });
+            
+            // Navigate into object/array
+            $('#navigateInto').click(function() {
+                const key = $('#dataKey').val().trim();
+                if (!key) {
+                    showNotification('Please enter a key name to navigate into', 'error');
+                    return;
+                }
+                
+                try {
+                    const currentData = getCurrentData();
+                    const target = getDataAtPath(currentData, currentDataPath);
+                    
+                    if (target && typeof target === 'object' && key in target) {
+                        const newTarget = target[key];
+                        if (typeof newTarget === 'object' && newTarget !== null) {
+                            currentDataPath.push(key);
+                            updateBreadcrumb();
+                            updateDataStructure();
+                            $('#dataKey').val('');
+                            $('#dataValue').val('');
+                            showNotification(`Navigated into "${key}"`, 'success');
+                        } else {
+                            showNotification(`Cannot navigate into non-object property "${key}"`, 'error');
+                        }
+                    } else {
+                        showNotification(`Property "${key}" not found`, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error navigating: ' + error.message, 'error');
+                }
+            });
+            
+            // Navigate up
+            $('#navigateUp').click(function() {
+                if (currentDataPath.length > 0) {
+                    currentDataPath.pop();
+                    updateBreadcrumb();
+                    updateDataStructure();
+                    $('#dataKey').val('');
+                    $('#dataValue').val('');
+                    showNotification('Navigated up', 'success');
+                } else {
+                    showNotification('Already at root level', 'info');
+                }
+            });
+            
+            // Helper function to try parsing JSON
+            function tryParseJSON(text) {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    return null;
+                }
+            }
+            
+            // Helper function to get current data
+            function getCurrentData() {
+                if (!currentFilePath) return null;
+                const fileContent = localStorage.getItem(currentFilePath);
+                return fileContent ? JSON.parse(fileContent) : null;
+            }
+            
+            // Helper function to get data at specific path
+            function getDataAtPath(data, path) {
+                let current = data;
+                for (const segment of path) {
+                    if (current && typeof current === 'object' && segment in current) {
+                        current = current[segment];
+                    } else {
+                        return null;
+                    }
+                }
+                return current;
+            }
+            
+            // Helper function to save data
+            function saveData(data) {
+                localStorage.setItem(currentFilePath, JSON.stringify(data, null, 2));
+                $('#jsonData').val(JSON.stringify(data, null, 2));
+            }
+            
+            // Update file list
+            function updateFileList() {
+                const fileList = $('#fileList');
+                fileList.empty();
+                
+                let hasFiles = false;
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.endsWith('.json')) {
+                        hasFiles = true;
+                        fileList.append(`
+                            <li class="file-item" data-filename="${key}">
+                                <span>${key}</span>
+                                <div class="file-actions">
+                                    <button class="download-btn">Download</button>
+                                </div>
+                            </li>
+                        `);
+                    }
+                }
+                
+                if (!hasFiles) {
+                    fileList.append(`
+                        <li class="empty-state">
+                            <i>📁</i>
+                            <p>No JSON files saved yet</p>
+                        </li>
+                    `);
+                }
+                
+                // Add event listeners to file items
+                $('.file-item').click(function() {
+                    const filename = $(this).data('filename');
+                    selectFile(filename);
+                });
+                
+                // Add event listeners to download buttons
+                $('.download-btn').click(function(e) {
+                    e.stopPropagation();
+                    const filename = $(this).closest('.file-item').data('filename');
+                    downloadFile(filename);
+                });
+            }
+            
+            // Select a file
+            function selectFile(filename) {
+                currentFilePath = filename;
+                currentDataPath = [];
+                
+                $('.file-item').removeClass('active');
+                $(`.file-item[data-filename="${filename}"]`).addClass('active');
+                
+                const fileContent = localStorage.getItem(filename);
+                $('#jsonData').val(JSON.stringify(JSON.parse(fileContent), null, 2));
+                
+                updateBreadcrumb();
+                updateDataStructure();
+                updateJsonPreview();
+            }
+            
+            // Update breadcrumb navigation
+            function updateBreadcrumb() {
+                const breadcrumb = $('#breadcrumb');
+                breadcrumb.empty();
+                
+                // Root item
+                breadcrumb.append(`
+                    <div class="breadcrumb-item ${currentDataPath.length === 0 ? 'active' : ''}" data-path="">
+                        root
+                    </div>
+                `);
+                
+                // Path items
+                let currentPath = '';
+                currentDataPath.forEach((segment, index) => {
+                    currentPath += (currentPath ? '.' : '') + segment;
+                    breadcrumb.append(`
+                        <div class="breadcrumb-item ${index === currentDataPath.length - 1 ? 'active' : ''}" data-path="${currentPath}">
+                            > ${segment}
+                        </div>
+                    `);
+                });
+                
+                // Add click events to breadcrumb items
+                $('.breadcrumb-item').click(function() {
+                    const path = $(this).data('path');
+                    if (path === '') {
+                        currentDataPath = [];
+                    } else {
+                        currentDataPath = path.split('.');
+                    }
+                    updateBreadcrumb();
+                    updateDataStructure();
+                });
+            }
+            
+            // Update data structure display
+            function updateDataStructure() {
+                const dataStructure = $('#dataStructure');
+                
+                if (!currentFilePath) {
+                    dataStructure.html(`
+                        <div class="empty-state">
+                            <i>📄</i>
+                            <p>No file selected. Create a new file or select an existing one.</p>
+                        </div>
+                    `);
+                    return;
+                }
+                
+                const currentData = getCurrentData();
+                const targetData = getDataAtPath(currentData, currentDataPath);
+                
+                if (!targetData || typeof targetData !== 'object') {
+                    dataStructure.html(`
+                        <div class="empty-state">
+                            <i>🔍</i>
+                            <p>Current selection is not an object or array.</p>
+                        </div>
+                    `);
+                    return;
+                }
+                
+                let html = '';
+                if (Object.keys(targetData).length === 0) {
+                    html = '<div class="empty-state"><p>No properties found</p></div>';
+                } else {
+                    for (const key in targetData) {
+                        const value = targetData[key];
+                        const valueType = Array.isArray(value) ? 'array' : typeof value;
+                        const valuePreview = valueType === 'object' ? '{...}' : 
+                                           valueType === 'array' ? '[...]' : 
+                                           JSON.stringify(value);
+                        
+                        html += `
+                            <div class="data-item">
+                                <div class="data-key">${key}</div>
+                                <div class="data-value">${valuePreview} <em>(${valueType})</em></div>
+                                <div class="data-actions">
+                                    <button class="btn-edit" data-key="${key}">Edit</button>
+                                    <button class="btn-delete" data-key="${key}">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                dataStructure.html(html);
+                
+                // Add event listeners to edit buttons
+                $('.btn-edit').click(function() {
+                    const key = $(this).data('key');
+                    const targetData = getDataAtPath(getCurrentData(), currentDataPath);
+                    const value = targetData[key];
+                    
+                    $('#dataKey').val(key);
+                    $('#dataValue').val(typeof value === 'object' ? JSON.stringify(value, null, 2) : value);
+                });
+                
+                // Add event listeners to delete buttons
+                $('.btn-delete').click(function() {
+                    const key = $(this).data('key');
+                    $('#dataKey').val(key);
+                    $('#deleteData').click();
+                });
+            }
+            
+            // Update JSON preview
+            function updateJsonPreview() {
+                if (!currentFilePath) {
+                    $('#jsonPreview').html(`
+                        <div class="empty-state">
+                            <i>📄</i>
+                            <p>No file selected. Create a new file or select an existing one.</p>
+                        </div>
+                    `);
+                    return;
+                }
+                
+                const fileContent = localStorage.getItem(currentFilePath);
+                const jsonData = JSON.parse(fileContent);
+                
+                $('#jsonPreview').html(`
+                    <strong>${currentFilePath}</strong><br><br>
+                    <pre>${JSON.stringify(jsonData, null, 2)}</pre>
+                `);
+            }
+            
+            // Reset data view
+            function resetDataView() {
+                currentFilePath = '';
+                currentDataPath = [];
+                $('#jsonData').val('');
+                updateBreadcrumb();
+                updateDataStructure();
+                updateJsonPreview();
+            }
+            
+            // Download file
+            function downloadFile(filename) {
+                const fileContent = localStorage.getItem(filename);
+                const blob = new Blob([fileContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('File downloaded', 'success');
+            }
+            
+            // Show notification
+            function showNotification(message, type) {
+                const notification = $('#notification');
+                notification.text(message);
+                notification.removeClass('success error info');
+                notification.addClass(type);
+                notification.addClass('show');
+                
+                setTimeout(function() {
+                    notification.removeClass('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
